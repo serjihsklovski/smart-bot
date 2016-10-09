@@ -2,25 +2,34 @@
 by running this file you create a new smart-bot database in your mysql.
 all you have to do is input your mysql username, password and token of your bot.
 """
+import configparser as cnf
 import mysql.connector as mc
 import telebot as tb
 from components import create_database
 from components import drop_database
+from models.info import Info
+
+config = cnf.ConfigParser()
+
+config['login'] = {
+    'host': '127.0.0.1',
+}
 
 print('smart-bot: "input your mysql username"')
 username = input('you: ')
+
+config['login']['user'] = username
+
 print('smart-bot: "input your mysql password"')
 password = input('you: ')
 
-login = {
-    'host': '127.0.0.1',
-    'database': 'mysql',
-    'user': username,
-    'password': password
-}
+config['login']['password'] = password
+
+with open('config.ini', 'w') as configfile:
+    config.write(configfile)
 
 try:
-    conn = mc.connect(**login)
+    conn = mc.connect(**dict(config['login']))
 
 except mc.Error as err:
     print('smart-bot: "FAILED - {}"'.format(err))
@@ -31,11 +40,15 @@ else:
     print('smart-bot: "input the token of your bot"')
     token = input('you: ')
 
+    config['telegram'] = {}
+    config['telegram']['bot_token'] = token
+
+    with open('config.ini', 'w') as configfile:
+        config.write(configfile)
+
     try:
         bot = tb.TeleBot(token)
         bot_info = bot.get_me()
-
-        smart_bot_database_name = 'smart_bot_' + bot_info.username
 
     except tb.apihelper.ApiException as exc:
         print('smart-bot: "FAILED - {}"'.format(exc))
@@ -43,8 +56,10 @@ else:
 
     else:
         curs = conn.cursor()
+        smart_bot_database_name = 'smart_bot_' + bot_info.username
 
         try:
+            # pass
             create_database(curs, smart_bot_database_name)
 
         except mc.Error as err:
@@ -58,7 +73,12 @@ else:
                 ).format(bot_info.username, smart_bot_database_name)
             )
 
-            conn.database = smart_bot_database_name
+            config['login']['database'] = smart_bot_database_name
+
+            with open('config.ini', 'w') as configfile:
+                config.write(configfile)
+
+            conn.database = config['login']['database']
 
             tables = {
                 'info':
@@ -131,6 +151,18 @@ else:
 
             else:
                 print('smart-bot: "OK - all tables were created successfully"')
+                print('smart-bot: "adding basic information about the bot"')
+
+                try:
+                    info = Info()
+                    info._conn = conn
+                    info.add_info(bot_info)
+
+                except mc.Error as err:
+                    print('smart-bot: "FAILED - {}"'.format(err))
+
+                else:
+                    print('smart-bot: "OK - basic information was added"')
 
         finally:
             curs.close()
