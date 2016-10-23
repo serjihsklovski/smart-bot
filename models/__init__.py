@@ -1,10 +1,7 @@
 import mysql.connector as mc
 import configparser as cnf
 from pathlib import Path
-
-
-class ConfigFileException(Exception):
-    pass
+from components.exceptions.config_file_exception import ConfigFileException
 
 
 class Model:
