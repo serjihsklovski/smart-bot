@@ -8,6 +8,7 @@ import telebot as tb
 from components import create_database
 from components import drop_database
 from models.info import Info
+from getpass import getpass
 
 config = cnf.ConfigParser()
 
@@ -21,7 +22,7 @@ username = input('you: ')
 config['login']['user'] = username
 
 print('smart-bot: "input your mysql password"')
-password = input('you: ')
+password = getpass('you: ')
 
 config['login']['password'] = password
 
@@ -38,7 +39,7 @@ except mc.Error as err:
 else:
     print('smart-bot: "OK - the connection is established"')
     print('smart-bot: "input the token of your bot"')
-    token = input('you: ')
+    token = getpass('you: ')
 
     config['telegram'] = {}
     config['telegram']['bot_token'] = token
@@ -56,10 +57,9 @@ else:
 
     else:
         curs = conn.cursor()
-        smart_bot_database_name = 'smart_bot_' + bot_info.username
+        smart_bot_database_name = 'sb_' + bot_info.username
 
         try:
-            # pass
             create_database(curs, smart_bot_database_name)
 
         except mc.Error as err:
