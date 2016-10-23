@@ -6,9 +6,9 @@ def create_database(cursor, new_database_name):
     :param new_database_name: string
     :return: None
     """
-    query = """
-        CREATE DATABASE `{}` DEFAULT CHARACTER SET 'utf8'
-        """.format(new_database_name)
+    query = 'CREATE DATABASE `{}` DEFAULT CHARACTER SET "utf8"'.format(
+        new_database_name
+    )
 
     cursor.execute(query)
 
