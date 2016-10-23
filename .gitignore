@@ -1,4 +1,5 @@
 .idea/*
 components/__pycache__/*
+components/exceptions/__pycache__/*
 models/__pycache__/*
 config.ini
